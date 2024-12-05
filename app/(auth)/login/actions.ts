@@ -18,7 +18,6 @@ export async function login(
       where: {
         username: {
           equals: username,
-          mode: "insensitive",
         },
       },
     });
