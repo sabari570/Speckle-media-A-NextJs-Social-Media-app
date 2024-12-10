@@ -81,7 +81,7 @@ export async function signup(
       sessionCookie.attributes,
     );
 
-    return redirect("/"); // The redirect throws a special kind of error so we need to handle the error thorwn by the redirect error
+    return redirect("/login"); // The redirect throws a special kind of error so we need to handle the error thorwn by the redirect error
   } catch (error) {
     // If the error is thrown by the redirect error then throw it
     if (isRedirectError(error)) throw error;

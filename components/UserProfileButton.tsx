@@ -20,12 +20,16 @@ import Link from "next/link";
 import { Check, LogOutIcon, Monitor, Moon, Sun, UserIcon } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { useTheme } from "next-themes";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UserProfileButton({
   classname,
 }: UserProfileButtonProps) {
   const { user } = useSession();
   const { theme, setTheme } = useTheme();
+
+  // we extract the queryClient using the useQueryClient hook in this way and this is how we clear the data from cache
+  const queryClient = useQueryClient();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -79,7 +83,12 @@ export default function UserProfileButton({
           </DropdownMenuPortal>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => logout()}>
+        <DropdownMenuItem
+          onClick={() => {
+            queryClient.clear();
+            logout();
+          }}
+        >
           <LogOutIcon className="mr-2 size-4" />
           Logout
         </DropdownMenuItem>
