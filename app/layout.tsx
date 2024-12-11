@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import ReactQueryProvider from "./ReactQueryProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 const poppins = localFont({
   src: [
@@ -80,6 +81,7 @@ export default function RootLayout({
             {children}
           </ThemeProvider>
         </ReactQueryProvider>
+        <Toaster />
       </body>
     </html>
   );

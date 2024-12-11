@@ -20,7 +20,9 @@ export default async function TrendsSidebar() {
       {/* When both the server components are written inside Suspense it means that only after loading both the component
       the loader goes off and renders them, it doesnt cause any use to the other components it renders them fastly
       */}
-      <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
+      <Suspense
+        fallback={<Loader2 className="mx-auto animate-spin text-blue-700" />}
+      >
         <WhoToFollow />
         <TrendingTopics />
       </Suspense>

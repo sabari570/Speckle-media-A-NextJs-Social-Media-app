@@ -9,9 +9,12 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import React from "react";
 import "./postEditor.styles.css";
 import { createPost } from "./actions";
+import useCreatePostMutation from "./mutations";
 
 export default function PostEditor() {
   const { user } = useSession();
+  const mutation = useCreatePostMutation();
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -33,9 +36,16 @@ export default function PostEditor() {
     }) || "";
 
   async function onSubmit() {
-    await createPost(input);
-    // Inorder to clear the input after submission
-    editor?.commands.clearContent();
+    // This is how we call the mutationFn from the useMutation object returned
+    // and the passed input will be given to the createPost function provided
+    // the mutation object given by the useMutation hook also has an onSucess callback which can be used to perform
+    // some action that we need to perform after successfull execution
+    mutation.mutate(input, {
+      onSuccess: () => {
+        // Inorder to clear the input after submission
+        editor?.commands.clearContent();
+      },
+    });
   }
 
   return (

@@ -20,7 +20,7 @@ export default function LoadingButton({
       className={cn("flex items-center gap-2", classname)}
       {...props}
     >
-      {loading && <Loader2 className="size-5 animate-spin" />}
+      {loading && <Loader2 className="size-5 animate-spin text-blue-700" />}
       {props.children}
     </Button>
   );

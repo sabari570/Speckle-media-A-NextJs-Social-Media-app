@@ -2,6 +2,7 @@
 
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
+import { postDatInclude } from "@/lib/types";
 import { createPostSchema } from "@/lib/validation";
 
 export async function createPost(input: string) {
@@ -12,10 +13,18 @@ export async function createPost(input: string) {
   if (!user) throw new Error("Unauthorized");
 
   const { content } = createPostSchema.parse({ content: input });
-  await prisma.post.create({
-    data: {
-      content,
-      userId: user.id,
-    },
+
+  // Creating a post using transaction in prisma
+  const newData = await prisma.$transaction(async (tx) => {
+    return await tx.post.create({
+      data: {
+        content,
+        userId: user.id,
+      },
+      include: postDatInclude,
+    });
   });
+
+  // We are returning the created post data
+  return newData;
 }

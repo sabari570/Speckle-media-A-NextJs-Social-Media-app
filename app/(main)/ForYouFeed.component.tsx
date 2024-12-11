@@ -3,23 +3,50 @@
 // The useQuery is always written inside a client component and not a server component
 
 import Posts from "@/components/posts/Posts";
-import kyInstance from "@/lib/ky";
 import ky from "ky";
-import { PostData } from "@/lib/types";
-import { useQuery } from "@tanstack/react-query";
+import { PostData, PostsPage } from "@/lib/types";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
+import { Button } from "@/components/ui/button";
+import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
+import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import DeletePostDialog from "@/components/posts/DeletePostDialog";
 
 export default function ForYouFeed() {
-  const { isPending, error, data } = useQuery<PostData[]>({
+  const {
+    data,
+    fetchNextPage,
+    isFetching,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+    error,
+  } = useInfiniteQuery({
     // These are the keys which is used to store this cache and also retrieve them
     queryKey: ["post-feed", "for-you"],
 
     // This is where we write which api should be called and the results of that API will be cached
-    queryFn: async () => await ky.get("api/posts/for-you").json<PostData[]>(),
+    queryFn: async ({ pageParam }) => {
+      return await ky
+        .get(
+          "api/posts/for-you",
+          pageParam ? { searchParams: { cursor: pageParam } } : {},
+        )
+        .json<PostsPage>();
+    },
+    initialPageParam: null as string | null, // the initialPage param we send inorder to fetch the posts, it is the value of the pageParam inside the queryFn when passed initially
+
+    // This is the function that sets the next pageParam inside the queryFn
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 
-  if (isPending) return <Loader2 className="mx-auto my-3 animate-spin" />;
+  // The structure of data is in such a way that you have to extract the data like this: data?.pages[0].posts
+  // But when you use flatMap you can loop through pages and then extract the pages it works similar to map,
+  // but map returns a [Array(6)] which is not what we want we want Array(6) so we use flatMap
+  const posts = data?.pages.flatMap((post) => post.posts);
+
+  if (isPending) return <PostsLoadingSkeleton />;
 
   if (error)
     return (
@@ -28,10 +55,15 @@ export default function ForYouFeed() {
       </p>
     );
   return (
-    <>
-      {data.map((post: PostData) => (
-        <Posts key={post.id} post={post} />
-      ))}
-    </>
+    <InfiniteScrollContainer
+      onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
+    >
+      {posts?.map((post) => <Posts key={post.id} post={post} />)}
+      {isFetchingNextPage && (
+        <Loader2 className="mx-auto my-3 animate-spin text-blue-700" />
+      )}
+      {/* TODO: yet to configure the post more button and then to implement the deletePostMutation and also trigger the dialog */}
+      <DeletePostDialog open onClose={() => null} post={posts && posts[0]} />
+    </InfiniteScrollContainer>
   );
 }
