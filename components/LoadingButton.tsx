@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface LoadingButtonProps extends ButtonProps {
   loading: boolean;
-  classname: string;
+  classname?: string;
 }
 
 export default function LoadingButton({

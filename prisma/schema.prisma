@@ -26,6 +26,8 @@ model User {
   sessions     Session[]
   createdAt    DateTime  @default(now())
   Post         Post[]
+  followers    Follow[]  @relation("Followers") // This will have the list of followers for the user
+  following    Follow[]  @relation("Following") // This will have the list of users the user follows
 
   @@map("users")
 }
@@ -49,3 +51,44 @@ model Post {
 
   @@map("posts")
 }
+
+// We create a Follow model inorder to figure out a users followers and following list, we could actually keep a list inside the User model inorder to identify the followers and following
+// But as the number of users grow it becomes really hard to fetch the data for our needs from the last table. So we actually create a new model Follow where we will be having a:
+// Many to Many relationship between User and Follow tables which connects users to users
+model Follow {
+  followerId String // The ID of the user who is following someone, ie. if we click on the follow button we become the follower so this will have our id
+
+  // SCENARIO: WHEN USERA FOLLOWS USERB 
+  // See this field in the UserB's perspective, UserA's id will be listed in the Followers list of UserB
+  // ----------------------------------------------------------------------------------------------------
+  // followerId represents the follower, so in UserB's perspective, 
+  // UserA will be listed as a follower. Therefore, the relation from User to Follow where the user is the 
+  // follower is named 'Following' (because you're following someone, you're in their following list).
+  // ----------------------------------------------------------------------------------------------------
+  follower User @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+
+  followingId String // The ID of the user who is getting followed, ie. the userId of the user we follow
+
+  // See this field in the UserA's perspective, UserB's id will be listed in the Following list of UserA
+  // ----------------------------------------------------------------------------------------------------
+  // followingId represents the user being followed, so in UserA's perspective, 
+  // UserB will appear in UserA's following list. 
+  // The relation where the user is being followed is named 'Followers' (because you're the one being followed).
+  // ----------------------------------------------------------------------------------------------------
+  following User @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  // This is set to uniquely identify the records from follow table
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+// For example: When UserA clicks the follow button on UserB =>
+// When UserA follows UserB, a new record will be created in the Follow table that associates UserA (the follower) with UserB (the user being followed).
+// Here’s the record in the Follow table:
+
+// followerId	 | followingId |
+// --------------------------|
+// UserA's ID	 | UserB's ID  |
+// --------------------------
+
+// The Users table remains unaffected directly by the follow action itself, but if you fetch a user’s following or followers, the new relationships will be visible:

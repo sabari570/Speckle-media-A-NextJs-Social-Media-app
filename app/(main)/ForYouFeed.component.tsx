@@ -4,14 +4,12 @@
 
 import Posts from "@/components/posts/Posts";
 import ky from "ky";
-import { PostData, PostsPage } from "@/lib/types";
+import { PostsPage } from "@/lib/types";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
-import { Button } from "@/components/ui/button";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
-import DeletePostDialog from "@/components/posts/DeletePostDialog";
 
 export default function ForYouFeed() {
   const {
@@ -62,8 +60,6 @@ export default function ForYouFeed() {
       {isFetchingNextPage && (
         <Loader2 className="mx-auto my-3 animate-spin text-blue-700" />
       )}
-      {/* TODO: yet to configure the post more button and then to implement the deletePostMutation and also trigger the dialog */}
-      <DeletePostDialog open onClose={() => null} post={posts && posts[0]} />
     </InfiniteScrollContainer>
   );
 }

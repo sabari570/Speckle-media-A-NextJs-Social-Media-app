@@ -10,9 +10,10 @@ import {
 } from "../ui/dialog";
 import LoadingButton from "../LoadingButton";
 import { Button } from "../ui/button";
+import useDeletePostMutation from "./mutations";
 
 interface DeletePostDialogProps {
-  post?: PostData;
+  post: PostData;
   open: boolean;
   onClose: () => void;
 }
@@ -22,8 +23,15 @@ export default function DeletePostDialog({
   open,
   onClose,
 }: DeletePostDialogProps) {
+  const mutation = useDeletePostMutation();
+  const handleOpenChange = (open: boolean) => {
+    // This means the dialog should not be closed when the mutation is in pending state
+    if (!open || !mutation.isPending) {
+      onClose();
+    }
+  };
   return (
-    <Dialog open>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete Post?</DialogTitle>
@@ -32,16 +40,23 @@ export default function DeletePostDialog({
             undone.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="gap-3">
           <LoadingButton
             variant="destructive"
-            loading={false}
-            disabled={false}
-            classname=""
+            loading={mutation.isPending}
+            onClick={() =>
+              mutation.mutate(post?.id, {
+                onSuccess: onClose,
+              })
+            }
           >
             Delete
           </LoadingButton>
-          <Button variant="outline" onClick={onClose}>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={mutation.isPending}
+          >
             Cancel
           </Button>
         </DialogFooter>
