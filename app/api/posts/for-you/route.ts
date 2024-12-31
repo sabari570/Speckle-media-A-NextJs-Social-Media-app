@@ -3,7 +3,7 @@
 
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
-import { postDatInclude, PostsPage } from "@/lib/types";
+import { getPostDataInclude, PostsPage } from "@/lib/types";
 import { NextRequest } from "next/server";
 
 // This is te GET API endpoint we write GET in caps
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     }
 
     const posts = await prisma.post.findMany({
-      include: postDatInclude,
+      include: getPostDataInclude(user.id),
       orderBy: { createdAt: "desc" },
       take: pageSize + 1, // totally fetches 11 posts so that we get the postid of the next posts we are about to fetch
       cursor: cursor ? { id: cursor } : undefined, //cursor indicates the postid of the next post from where we start fetching the next batch

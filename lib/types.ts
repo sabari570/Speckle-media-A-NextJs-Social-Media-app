@@ -1,23 +1,43 @@
 import { Prisma } from "@prisma/client";
 
-export const userDataSelect = {
-  id: true,
-  username: true,
-  displayName: true,
-  avatarUrl: true,
-} satisfies Prisma.UserSelect;
+// This function is actually written to get the userData properties based on the userId given
+export function getUserDataSelect(loggedInUserId: string) {
+  return {
+    id: true,
+    username: true,
+    displayName: true,
+    avatarUrl: true,
+    followers: {
+      where: {
+        // We dont need the details of all followers, instead what we require is we only want to know whether the loggedInUser
+        // is following the user or not for that we try to fetch the user follower where the followerId is same as the loggedInUser id ie. us
+        followerId: loggedInUserId,
+      },
+      //   We Select only that follower id
+      select: {
+        followerId: true,
+      },
+    },
+    // We return the total count of the followers of that user
+    _count: {
+      select: {
+        followers: true,
+      },
+    },
+  } satisfies Prisma.UserSelect;
+}
 
-// Defining an object `postDataInclude` to specify the related data to include when querying the `Post` model.
-export const postDatInclude = {
-  user: {
-    select: userDataSelect,
-  },
-} satisfies Prisma.PostInclude;
-// The 'satisfies' keyword ensures that the postDataInclude is compatible with the Prisma.PostInclude type.
+export function getPostDataInclude(loggedInUserId: string) {
+  return {
+    user: {
+      select: getUserDataSelect(loggedInUserId),
+    },
+  } satisfies Prisma.PostInclude; // The 'satisfies' keyword ensures that the postDataInclude is compatible with the Prisma.PostInclude type.
+}
 
 // Defining a TypeScript type `PostData` to represent the payload of a `Post` object when queried with the `postDataInclude` configuration.
 export type PostData = Prisma.PostGetPayload<{
-  include: typeof postDatInclude;
+  include: ReturnType<typeof getPostDataInclude>;
 }>;
 
 // Summary:
@@ -43,4 +63,9 @@ BigInt.prototype.toJSON = function () {
 export interface PostsPage {
   posts: PostData[];
   nextCursor: string | null;
+}
+
+export interface FollowerInfo {
+  followers: number;
+  isFollowedByUser: boolean;
 }

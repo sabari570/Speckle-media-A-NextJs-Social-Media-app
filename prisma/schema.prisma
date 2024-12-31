@@ -26,8 +26,8 @@ model User {
   sessions     Session[]
   createdAt    DateTime  @default(now())
   Post         Post[]
-  followers    Follow[]  @relation("Followers") // This will have the list of followers for the user
-  following    Follow[]  @relation("Following") // This will have the list of users the user follows
+  followers    Follow[]  @relation("Following") // Users that the user follows - Following 
+  following    Follow[]  @relation("Followers") // Users that follows the user - Followers
 
   @@map("users")
 }
@@ -52,6 +52,10 @@ model Post {
   @@map("posts")
 }
 
+// ******************************************************************************************************************************
+// * For better understanding refer this doc:  https://www.prisma.io/docs/orm/prisma-schema/data-model/relations/self-relations *
+// ******************************************************************************************************************************
+
 // We create a Follow model inorder to figure out a users followers and following list, we could actually keep a list inside the User model inorder to identify the followers and following
 // But as the number of users grow it becomes really hard to fetch the data for our needs from the last table. So we actually create a new model Follow where we will be having a:
 // Many to Many relationship between User and Follow tables which connects users to users
@@ -65,7 +69,7 @@ model Follow {
   // UserA will be listed as a follower. Therefore, the relation from User to Follow where the user is the 
   // follower is named 'Following' (because you're following someone, you're in their following list).
   // ----------------------------------------------------------------------------------------------------
-  follower User @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  follower User @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
 
   followingId String // The ID of the user who is getting followed, ie. the userId of the user we follow
 
@@ -75,7 +79,7 @@ model Follow {
   // UserB will appear in UserA's following list. 
   // The relation where the user is being followed is named 'Followers' (because you're the one being followed).
   // ----------------------------------------------------------------------------------------------------
-  following User @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
 
   // This is set to uniquely identify the records from follow table
   @@unique([followerId, followingId])

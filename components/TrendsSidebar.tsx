@@ -1,6 +1,6 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
-import { userDataSelect } from "@/lib/types";
+import { getUserDataSelect } from "@/lib/types";
 import Link from "next/link";
 import React, { Suspense } from "react";
 import UserAvatar from "./UserAvatar";
@@ -10,6 +10,7 @@ import { resolve } from "path";
 import { unstable_cache } from "next/cache";
 import { number } from "zod";
 import { formatNumber } from "@/lib/utils";
+import FollowButton from "./FollowButton";
 
 // Inorder to set a loading state in server component use Suspense to show that particular server component is loading
 // In client components use useState hook
@@ -31,15 +32,22 @@ export default async function TrendsSidebar() {
 }
 
 async function WhoToFollow() {
-  const { user } = await validateRequest();
-  if (!user) return null;
+  const { user: loggedInUser } = await validateRequest();
+  if (!loggedInUser) return null;
   const usersToFollow = await prisma.user.findMany({
     where: {
       NOT: {
-        id: user.id,
+        id: loggedInUser.id,
+      },
+      followers: {
+        none: {
+          // this means that the loggedin user should not be present in the followers list of the listed users
+          // Extracting those users whom we are not following
+          followerId: loggedInUser.id,
+        },
       },
     },
-    select: userDataSelect,
+    select: getUserDataSelect(loggedInUser.id),
     take: 5,
   });
 
@@ -62,7 +70,16 @@ async function WhoToFollow() {
               </p>
             </div>
           </Link>
-          <Button className="rounded-xl">Follow</Button>
+          <FollowButton
+            userId={user.id}
+            initialState={{
+              followers: user._count.followers,
+              // If the listed user is being followed by us this will be set to true since our id will be present in their followers list
+              isFollowedByUser: user.followers.some(
+                (follower) => follower.followerId === loggedInUser.id,
+              ),
+            }}
+          />
         </div>
       ))}
     </div>
