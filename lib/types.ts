@@ -7,6 +7,8 @@ export function getUserDataSelect(loggedInUserId: string) {
     username: true,
     displayName: true,
     avatarUrl: true,
+    bio: true,
+    createdAt: true,
     followers: {
       where: {
         // We dont need the details of all followers, instead what we require is we only want to know whether the loggedInUser
@@ -21,11 +23,18 @@ export function getUserDataSelect(loggedInUserId: string) {
     // We return the total count of the followers of that user
     _count: {
       select: {
+        Post: true,
         followers: true,
       },
     },
   } satisfies Prisma.UserSelect;
 }
+
+// This returns the return type of the getUserDataSelect function
+// we place select here because we are using the getUserDataSelect function within the select key
+export type UserData = Prisma.UserGetPayload<{
+  select: ReturnType<typeof getUserDataSelect>;
+}>;
 
 export function getPostDataInclude(loggedInUserId: string) {
   return {
@@ -36,6 +45,7 @@ export function getPostDataInclude(loggedInUserId: string) {
 }
 
 // Defining a TypeScript type `PostData` to represent the payload of a `Post` object when queried with the `postDataInclude` configuration.
+// We place include as the key for the returnType because we use the getPostDataInclude in the include key
 export type PostData = Prisma.PostGetPayload<{
   include: ReturnType<typeof getPostDataInclude>;
 }>;

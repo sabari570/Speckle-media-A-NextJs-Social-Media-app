@@ -48,7 +48,7 @@ export default function UserProfileButton({
       <DropdownMenuContent className="mr-4 mt-1">
         <DropdownMenuLabel>Logged in as @{user.username}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <Link href={`/user/${user.id}`}>
+        <Link href={`/users/${user.id}`}>
           <DropdownMenuItem>
             <UserIcon className="mr-2 size-4" />
             Profile
