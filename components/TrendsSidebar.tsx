@@ -11,6 +11,7 @@ import { unstable_cache } from "next/cache";
 import { number } from "zod";
 import { formatNumber } from "@/lib/utils";
 import FollowButton from "./FollowButton";
+import UserToolTip from "./UserToolTip";
 
 // Inorder to set a loading state in server component use Suspense to show that particular server component is loading
 // In client components use useState hook
@@ -59,17 +60,22 @@ async function WhoToFollow() {
           key={user.id}
           className="flex items-center justify-between space-y-4"
         >
-          <Link href={`/users/${user.id}`} className="flex items-center gap-4">
-            <UserAvatar avatarUrl={user.avatarUrl} classname="flex-none" />
-            <div>
-              <p className="line-clamp-1 break-all text-sm font-semibold hover:underline">
-                {user.displayName}
-              </p>
-              <p className="line-clamp-1 break-all text-xs text-muted-foreground hover:underline">
-                @{user.username}
-              </p>
-            </div>
-          </Link>
+          <UserToolTip user={user}>
+            <Link
+              href={`/users/${user.id}`}
+              className="flex items-center gap-4"
+            >
+              <UserAvatar avatarUrl={user.avatarUrl} classname="flex-none" />
+              <div>
+                <p className="line-clamp-1 break-all text-sm font-semibold hover:underline">
+                  {user.displayName}
+                </p>
+                <p className="line-clamp-1 break-all text-xs text-muted-foreground hover:underline">
+                  @{user.username}
+                </p>
+              </div>
+            </Link>
+          </UserToolTip>
           <FollowButton
             userId={user.id}
             initialState={{

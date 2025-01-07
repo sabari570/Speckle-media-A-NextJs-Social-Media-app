@@ -7,10 +7,12 @@ import {
 } from "@tanstack/react-query";
 import { createPost } from "./actions";
 import { PostsPage } from "@/lib/types";
+import { useSession } from "@/app/(main)/SessionProvider";
 
 export default function useCreatePostMutation() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useSession();
 
   const mutation = useMutation({
     mutationFn: createPost,
@@ -22,9 +24,23 @@ export default function useCreatePostMutation() {
       //          => instead if we invalidate the existing cache and re-fetch the entire posts again that can cause slow loading and bad user experience
       // * Next if we dont have any posts fetched and we already created a new post then we have to invalidate the cache and then refetch the posts feed again
 
-      const queryFilter: QueryFilters = {
-        queryKey: ["post-feed", "for-you"],
-      };
+      const queryFilter = {
+        // Now we invalidate and setQueries only for post-feed
+        queryKey: ["post-feed"],
+        // This written to actually tell the react query to when to revalidate the query, which means we need to revalidate the query
+        // When their is change in the 'post-feed' or 'post-feed' & 'for-you' or 'post-feed', 'user-posts' and userId
+        // This is why the predicate is used if it returns true then we revalidate
+        // In DELETING a post we dont have to make these changes since it actually revalidates the entire the cache that has the post-feed as queryKey
+        predicate(query) {
+          return (
+            query.queryKey.includes("for-you") ||
+            (query.queryKey.includes("user-posts") &&
+              query.queryKey.includes(user.id))
+          );
+        },
+      } satisfies QueryFilters; //the satisfies keyword in TypeScript is used to ensure that an object conforms to a specific type
+      // When you use satisfies QueryFilters, TypeScript performs a structural check to ensure that the queryFilter object matches
+      // the type QueryFilters. This includes checking the presence of the predicate method and its type signature.
 
       //   Cancel the ongoing queries
       await queryClient.cancelQueries(queryFilter);
@@ -57,7 +73,8 @@ export default function useCreatePostMutation() {
         // predicate function can be used to write conditions for invalidating
         predicate(query) {
           // This invalidates the cache only if the query state data is empty i.e, no data is fetched yet
-          return !query.state.data;
+          // This will invalidate even when the conditions provided inside the queryFilter is also true
+          return queryFilter.predicate(query) && !query.state.data;
         },
       });
 

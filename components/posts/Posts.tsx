@@ -7,6 +7,8 @@ import UserAvatar from "../UserAvatar";
 import { formatRelativeDate } from "@/lib/utils";
 import PostMoreButton from "./PostMoreButton";
 import { useSession } from "@/app/(main)/SessionProvider";
+import Linkify from "../Linkify";
+import UserToolTip from "../UserToolTip";
 
 export default function Posts({ post }: { post: PostData }) {
   const { user } = useSession();
@@ -19,16 +21,20 @@ export default function Posts({ post }: { post: PostData }) {
     <article className="shadow-light group/more mt-3 space-y-3 rounded-2xl bg-card p-5">
       <div className="flex items-center justify-between">
         <div className="flex flex-wrap gap-3">
-          <Link href={`/users/${post.userId}`}>
-            <UserAvatar avatarUrl={post.user.avatarUrl} />
-          </Link>
-          <div>
-            <Link
-              href={`/users/${post.userId}`}
-              className="block font-medium hover:underline"
-            >
-              {post.user.displayName}
+          <UserToolTip user={post.user}>
+            <Link href={`/users/${post.userId}`}>
+              <UserAvatar avatarUrl={post.user.avatarUrl} />
             </Link>
+          </UserToolTip>
+          <div>
+            <UserToolTip user={post.user}>
+              <Link
+                href={`/users/${post.userId}`}
+                className="block font-medium hover:underline"
+              >
+                {post.user.displayName}
+              </Link>
+            </UserToolTip>
             <Link
               href={`/posts/${post.id}`}
               className="block text-sm text-muted-foreground hover:underline"
@@ -45,7 +51,9 @@ export default function Posts({ post }: { post: PostData }) {
           />
         )}
       </div>
-      <div className="whitespace-pre-line break-words">{post.content}</div>
+      <Linkify>
+        <div className="whitespace-pre-line break-words">{post.content}</div>
+      </Linkify>
     </article>
   );
 }

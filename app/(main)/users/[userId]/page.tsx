@@ -12,6 +12,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import React, { cache } from "react";
 import UserPosts from "./UserPosts.component";
+import Linkify from "@/components/Linkify";
 
 interface ProfilePageProps {
   params: { userId: string };
@@ -52,7 +53,6 @@ export async function generateMetadata({
 export default async function page({ params }: ProfilePageProps) {
   const { user: loggedInUser } = await validateRequest();
   const { userId } = await params;
-  console.log("Logged in user: ", userId);
 
   if (!loggedInUser) {
     return (
@@ -65,7 +65,6 @@ export default async function page({ params }: ProfilePageProps) {
   }
 
   const user = await getUser(userId, loggedInUser.id);
-  if (!user) return notFound();
   return (
     <main className="flex w-full min-w-0 gap-5">
       <div className="w-full min-w-0 space-y-5">
@@ -127,9 +126,11 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
       {user.bio && (
         <>
           <hr />
-          <div className="overflow-hidden whitespace-pre-line break-words text-sm italic">
-            {user.bio}
-          </div>
+          <Linkify>
+            <div className="overflow-hidden whitespace-pre-line break-words text-sm italic">
+              {user.bio}
+            </div>
+          </Linkify>
         </>
       )}
     </div>
