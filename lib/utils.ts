@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { formatDate, formatDistanceToNowStrict } from "date-fns";
-import { number } from "zod";
+import { number, string } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -35,3 +35,18 @@ export function formatNumber(n: number): string {
     maximumFractionDigits: 1,
   }).format(n);
 }
+
+/**
+ * Creates an enum based on the keys
+ * The values will be lowercased version of the keys
+ *
+ * @param {string[]} keys The keys of enum
+ * @returns {Object}
+ */
+export const createEnum = (keys: string[]): Record<string, string> => {
+  const keysValues = keys.reduce<Record<string, string>>((acc, key) => {
+    acc[key] = key.toLowerCase();
+    return acc;
+  }, {});
+  return Object.freeze(keysValues);
+};

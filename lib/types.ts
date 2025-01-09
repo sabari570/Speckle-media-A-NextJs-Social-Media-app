@@ -41,6 +41,7 @@ export function getPostDataInclude(loggedInUserId: string) {
     user: {
       select: getUserDataSelect(loggedInUserId),
     },
+    attachments: true,
   } satisfies Prisma.PostInclude; // The 'satisfies' keyword ensures that the postDataInclude is compatible with the Prisma.PostInclude type.
 }
 

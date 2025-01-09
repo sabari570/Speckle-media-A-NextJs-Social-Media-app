@@ -164,7 +164,7 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
       />
       <button
         type="button"
-        className="group relative"
+        className="group relative overflow-hidden rounded-full"
         // On clicking the button we trigger the file input click through the fileInputRef
         onClick={() => fileInputRef.current?.click()}
       >

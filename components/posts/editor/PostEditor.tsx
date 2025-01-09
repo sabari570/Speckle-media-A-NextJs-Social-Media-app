@@ -8,12 +8,24 @@ import StarterKit from "@tiptap/starter-kit";
 import { EditorContent, useEditor } from "@tiptap/react";
 import React from "react";
 import "./postEditor.styles.css";
-import { createPost } from "./actions";
 import useCreatePostMutation from "./mutations";
+import useUploadAttachments from "./useUploadAttachments";
+import AttachmentButton from "./AttachmentButton.component";
+import AttachmentPreviews from "./AttachmentPreviews.component";
+import LoadingButton from "@/components/LoadingButton";
+import { Loader2 } from "lucide-react";
 
 export default function PostEditor() {
   const { user } = useSession();
   const mutation = useCreatePostMutation();
+  const {
+    handleStartUpload,
+    isUploading,
+    uploadProgress,
+    removeAttachment,
+    reset: resetAttachments,
+    attachments,
+  } = useUploadAttachments();
 
   const editor = useEditor({
     extensions: [
@@ -40,12 +52,19 @@ export default function PostEditor() {
     // and the passed input will be given to the createPost function provided
     // the mutation object given by the useMutation hook also has an onSucess callback which can be used to perform
     // some action that we need to perform after successfull execution
-    mutation.mutate(input, {
-      onSuccess: () => {
-        // Inorder to clear the input after submission
-        editor?.commands.clearContent();
+    mutation.mutate(
+      {
+        content: input,
+        mediaIds: attachments.map((a) => a.mediaId).filter(Boolean) as string[],
       },
-    });
+      {
+        onSuccess: () => {
+          // Inorder to clear the input after submission
+          editor?.commands.clearContent();
+          resetAttachments();
+        },
+      },
+    );
   }
 
   return (
@@ -58,14 +77,31 @@ export default function PostEditor() {
             className="text-md max-h-[20rem] w-full overflow-y-auto rounded-2xl bg-secondary px-5 py-3"
           />
         </div>
-        <div className="flex items-center justify-end">
-          <Button
+        {!!attachments.length && (
+          <AttachmentPreviews
+            attachments={attachments}
+            onRemoveAttachment={removeAttachment}
+          />
+        )}
+        <div className="flex items-center justify-end gap-5">
+          {isUploading && (
+            <>
+              <span className="text-sm">{uploadProgress ?? 0}%</span>
+              <Loader2 className="size-5 animate-spin text-primary" />
+            </>
+          )}
+          <AttachmentButton
+            onAttachmentsSelected={handleStartUpload}
+            disabled={isUploading || attachments.length >= 5}
+          />
+          <LoadingButton
+            loading={mutation.isPending}
             onClick={onSubmit}
             className="min-w-28 px-7 py-3"
             disabled={!input.trim()}
           >
             Post
-          </Button>
+          </LoadingButton>
         </div>
       </div>
     </div>

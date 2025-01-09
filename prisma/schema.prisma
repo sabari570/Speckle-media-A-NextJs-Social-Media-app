@@ -42,14 +42,30 @@ model Session {
 }
 
 model Post {
-  id        String   @id @default(cuid())
-  content   String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  content     String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachments Media[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("posts")
+}
+
+model Media {
+  id        String     @id @default(cuid())
+  url       String
+  type      MEDIA_TYPE
+  postId    String?
+  // onDelete is set to SetNull because, if a post is deleted we dont want to deleted the corresponding media since we will have to later
+  // delete the media files that are uploaded to uploadThing so we will require the fileName for accessing and deleting those
+  // instead when a post is deleted we set the postId to null so that we can actually figure out what media files must be deleted later, by just
+  // figuring out the media that doesnt have a postId
+  post      Post?      @relation(fields: [postId], references: [id], onDelete: SetNull)
+  createdAt DateTime   @default(now())
+
+  @@map("post_media")
 }
 
 // ******************************************************************************************************************************
@@ -96,3 +112,7 @@ model Follow {
 // --------------------------
 
 // The Users table remains unaffected directly by the follow action itself, but if you fetch a user’s following or followers, the new relationships will be visible:
+enum MEDIA_TYPE {
+  IMAGE
+  VIDEO
+}

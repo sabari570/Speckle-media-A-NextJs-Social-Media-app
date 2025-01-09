@@ -9,6 +9,8 @@ import PostMoreButton from "./PostMoreButton";
 import { useSession } from "@/app/(main)/SessionProvider";
 import Linkify from "../Linkify";
 import UserToolTip from "../UserToolTip";
+import AttachmentPreviews from "./editor/AttachmentPreviews.component";
+import MediaPreviews from "../MediaPreview";
 
 export default function Posts({ post }: { post: PostData }) {
   const { user } = useSession();
@@ -54,6 +56,7 @@ export default function Posts({ post }: { post: PostData }) {
       <Linkify>
         <div className="whitespace-pre-line break-words">{post.content}</div>
       </Linkify>
+      {!!post.attachments.length && <MediaPreviews medias={post.attachments} />}
     </article>
   );
 }
