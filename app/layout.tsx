@@ -4,6 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import ReactQueryProvider from "./ReactQueryProvider";
 import { Toaster } from "@/components/ui/toaster";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
+import { extractRouterConfig } from "uploadthing/server";
+import { fileRouter } from "./api/uploadthing/core";
 
 const poppins = localFont({
   src: [
@@ -71,6 +74,13 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${poppins.variable} font-sans antialiased`}
       >
+        {/* UploadThing requires your server to confirm permissions before users can upload files. While this happens, users might see a brief "loading" state because the app is waiting for the server's response.
+            To avoid this loading state and make the upload process feel smoother, UploadThing provides a helper called <NextSSRPlugin />.
+            What it does:
+              * SSR (Server-Side Rendering) Hydration: This plugin preloads the required permissions during the server-side rendering process.
+              * By preloading, when the page loads in the browser, the app already has the permissions, so users don't see the "loading" state. 
+       */}
+        <NextSSRPlugin routerConfig={extractRouterConfig(fileRouter)} />
         <ReactQueryProvider>
           <ThemeProvider
             attribute={"class"}

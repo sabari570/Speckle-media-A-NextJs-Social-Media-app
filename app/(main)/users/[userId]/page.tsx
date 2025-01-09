@@ -13,6 +13,7 @@ import { notFound } from "next/navigation";
 import React, { cache } from "react";
 import UserPosts from "./UserPosts.component";
 import Linkify from "@/components/Linkify";
+import EditProfileButton from "./EditProfileButton";
 
 interface ProfilePageProps {
   params: { userId: string };
@@ -118,7 +119,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           </div>
         </div>
         {user.id === loggedInUserId ? (
-          <Button>Edit Profile</Button>
+          <EditProfileButton user={user} />
         ) : (
           <FollowButton userId={user.id} initialState={followerInfo} />
         )}

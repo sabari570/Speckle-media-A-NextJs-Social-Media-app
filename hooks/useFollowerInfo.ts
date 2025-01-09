@@ -27,7 +27,7 @@ export default function useFollowerInfo(
     // it will hit a request for the likes data each time for each posts which will be more number of request-hit to the server.
     // If staleTime is Infinity then this data will be revalidated only when we ask it to, ie. only when we ,manullay set the cache data via an API call
     // the cache will be updated due to which we will correct the data
-    staleTime: Infinity,
+    // staleTime: Infinity,
   });
   return query;
 }
