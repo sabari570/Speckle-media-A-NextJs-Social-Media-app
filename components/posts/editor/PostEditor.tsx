@@ -1,12 +1,11 @@
 "use client";
 
 import { useSession } from "@/app/(main)/SessionProvider";
-import { Button } from "@/components/ui/button";
 import UserAvatar from "@/components/UserAvatar";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 import { EditorContent, useEditor } from "@tiptap/react";
-import React from "react";
+import React, { ClipboardEvent } from "react";
 import "./postEditor.styles.css";
 import useCreatePostMutation from "./mutations";
 import useUploadAttachments from "./useUploadAttachments";
@@ -14,6 +13,8 @@ import AttachmentButton from "./AttachmentButton.component";
 import AttachmentPreviews from "./AttachmentPreviews.component";
 import LoadingButton from "@/components/LoadingButton";
 import { Loader2 } from "lucide-react";
+import { useDropzone } from "@uploadthing/react";
+import { cn } from "@/lib/utils";
 
 export default function PostEditor() {
   const { user } = useSession();
@@ -26,6 +27,33 @@ export default function PostEditor() {
     reset: resetAttachments,
     attachments,
   } = useUploadAttachments();
+
+  // useDropzone can be used for dragging and dropping files into the input field for uploading them
+  // getRootProps - this is given to the input field where we want to allow the drag and drop to happen
+  // getInputProps - this is required inorder to attain the functionality of opening the files when clicking on the input
+  // basically it does the functionality of <input type='file' />
+  // isDragActive - this is needed for styling through which we can actually style the input div when dragging and dropping
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: handleStartUpload,
+  });
+
+  // Here we remove the onClick prop from getRootProps because if we keep it once we click on the input field it will
+  // open the files to input them, since we already created a seperate button for uploading and selecting the files we can
+  // ignore the onClick and keep the rest of the props
+  const { onClick, ...rootProps } = getRootProps();
+
+  // This function handles to upload an image when an image address is pasted on to the input field
+  function onPaste(e: ClipboardEvent<HTMLInputElement>) {
+    // Convertes the clipboard items to an array
+    const pastedFiles = Array.from(e.clipboardData.items);
+
+    // Checks and filters only those files whose file kind is 'file' and then converts them
+    // to file type and then uploads it to uploadThing
+    const filesToUpload = pastedFiles
+      .filter((pastedFile) => pastedFile.kind === "file")
+      .map((item) => item.getAsFile()) as File[];
+    handleStartUpload(filesToUpload);
+  }
 
   const editor = useEditor({
     extensions: [
@@ -71,10 +99,15 @@ export default function PostEditor() {
     <div className="flex gap-5 rounded-2xl bg-card px-5 py-5">
       <UserAvatar avatarUrl={user.avatarUrl} />
       <div className="flex w-full flex-col flex-wrap gap-3">
-        <div>
+        <div {...rootProps}>
+          <input {...getInputProps()} />
           <EditorContent
             editor={editor}
-            className="text-md max-h-[20rem] w-full overflow-y-auto rounded-2xl bg-secondary px-5 py-3"
+            onPaste={onPaste}
+            className={cn(
+              "text-md max-h-[20rem] w-full max-w-[25rem] overflow-y-auto break-normal break-words rounded-2xl bg-secondary px-5 py-3",
+              isDragActive && "outline-dashed",
+            )}
           />
         </div>
         {!!attachments.length && (

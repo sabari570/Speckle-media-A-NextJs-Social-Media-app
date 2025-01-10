@@ -27,17 +27,14 @@ export const fileRouter = {
       if (oldAvatarUrl) {
         // Extract the key and delete the file
         const key = oldAvatarUrl.split(
-          `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
+          `/f/`,
         )[1];
         if (key) await new UTApi().deleteFiles(key);
       }
 
       // We replace the default provided url by uploadthing to our own app's url
       // Such that it stays unique and no one from outside can use the url to resize their image
-      const newAvatarUrl = file.url.replace(
-        "/f/",
-        `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-      );
+      const newAvatarUrl = file.url;
 
       await prisma.user.update({
         where: {
@@ -56,14 +53,14 @@ export const fileRouter = {
   })
     .middleware(handleMiddleware)
     .onUploadComplete(async ({ file }) => {
-      const newAttachmentUrl = file.url.replace(
-        "/f/",
-        `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-      );
-      console.log("New attachment url: ", newAttachmentUrl);
+      // const newAttachmentUrl = file.url.replace(
+      //   "/f/",
+      //   `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
+      // );
+      // console.log("New attachment url: ", newAttachmentUrl);
       const media = await prisma.media.create({
         data: {
-          url: newAttachmentUrl,
+          url: file.url,
           type: file.type.startsWith("image")
             ? MEDIA_TYPE.IMAGE
             : MEDIA_TYPE.VIDEO,
