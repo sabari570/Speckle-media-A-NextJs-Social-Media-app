@@ -20,9 +20,13 @@ export async function GET(req: Request) {
     const unusedMedias = await prisma.media.findMany({
       where: {
         postId: null,
-        createdAt: {
-          lte: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        },
+        ...(process.env.NODE_ENV === "production"
+          ? {
+              createdAt: {
+                lte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+              },
+            }
+          : {}),
       },
       select: {
         id: true,

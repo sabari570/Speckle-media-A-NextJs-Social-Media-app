@@ -53,11 +53,6 @@ export const fileRouter = {
   })
     .middleware(handleMiddleware)
     .onUploadComplete(async ({ file }) => {
-      // const newAttachmentUrl = file.url.replace(
-      //   "/f/",
-      //   `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-      // );
-      // console.log("New attachment url: ", newAttachmentUrl);
       const media = await prisma.media.create({
         data: {
           url: file.url,
