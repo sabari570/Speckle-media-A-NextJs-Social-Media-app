@@ -1,5 +1,4 @@
 "use server";
-import NotFound from "@/app/(main)/not-found";
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import { getUserDataSelect, UserData } from "@/lib/types";

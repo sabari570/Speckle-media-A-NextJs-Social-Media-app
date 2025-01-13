@@ -1,16 +1,17 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
-import { getPostDataInclude } from "@/lib/types";
+import { getPostDataInclude, PostData } from "@/lib/types";
 import { Metadata } from "next";
-import React, { cache } from "react";
+import React, { cache, Suspense } from "react";
 import NotFound from "../../not-found";
+import Posts from "@/components/posts/Posts";
+import UserInfoSidebar from "./UserInfoSidebar";
 
 interface PostDetailPageProps {
-  postId: string;
+  params: { postId: string };
 }
 
 const getPost = cache(async (postId: string, loggedInUserId: string) => {
-  console.log("Post id obtained: ", postId);
   const post = await prisma.post.findUnique({
     where: {
       id: postId,
@@ -24,8 +25,9 @@ const getPost = cache(async (postId: string, loggedInUserId: string) => {
 });
 
 export async function generateMetadata({
-  postId,
+  params,
 }: PostDetailPageProps): Promise<Metadata> {
+  const { postId } = await params;
   const { user } = await validateRequest();
   if (!user) return {};
   const postDetail = await getPost(postId, user.id);
@@ -34,7 +36,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page({ postId }: PostDetailPageProps) {
+export default async function Page({ params }: PostDetailPageProps) {
+  const { postId } = await params;
   const { user } = await validateRequest();
   if (!user) {
     return (
@@ -46,5 +49,17 @@ export default async function Page({ postId }: PostDetailPageProps) {
     );
   }
   const post = await getPost(postId, user.id);
-  return <div>This is the post detail page</div>;
+  if (!post) return NotFound();
+  return (
+    <main className="flex w-full min-w-0 gap-5">
+      <div className="w-full min-w-0 space-y-5">
+        <Posts post={post} />
+      </div>
+      <div className="sticky top-[5.25rem] hidden h-fit w-80 flex-none lg:block">
+        <Suspense>
+          <UserInfoSidebar user={post.user} />
+        </Suspense>
+      </div>
+    </main>
+  );
 }
