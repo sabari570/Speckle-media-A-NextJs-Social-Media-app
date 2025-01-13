@@ -31,6 +31,7 @@ export default async function UserInfoSidebar({ user }: UsetInfoSidebarProps) {
         </Link>
       </UserToolTip>
       <Linkify>
+        {/* line-clamp-6 means it shows upto 6 lines and then breaks them */}
         <div className="line-clamp-6 whitespace-pre-line break-words italic text-muted-foreground">
           {user.bio}
         </div>

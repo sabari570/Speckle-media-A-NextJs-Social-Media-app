@@ -2,7 +2,7 @@
 
 import { PostData } from "@/lib/types";
 import Link from "next/link";
-import React from "react";
+import React, { use } from "react";
 import UserAvatar from "../UserAvatar";
 import { formatRelativeDate } from "@/lib/utils";
 import PostMoreButton from "./PostMoreButton";
@@ -10,6 +10,7 @@ import { useSession } from "@/app/(main)/SessionProvider";
 import Linkify from "../Linkify";
 import UserToolTip from "../UserToolTip";
 import MediaPreviews from "../MediaPreview";
+import LikeButton from "./LikeButton";
 
 export default function Posts({ post }: { post: PostData }) {
   const { user } = useSession();
@@ -39,6 +40,10 @@ export default function Posts({ post }: { post: PostData }) {
             <Link
               href={`/posts/${post.id}`}
               className="block text-sm text-muted-foreground hover:underline"
+              // We add 'suppressHydrationWarning' because this cause an hydration error i.e when you create a fresh post and navigate to the post details page
+              // the post that is rendered in the server is 2 seconds ago and when that is rendered in the client-side it is 2 seconds ago which cause this error
+              // this happens in the formatRelativeDate() fn so to avoid this error we supress that warning
+              suppressHydrationWarning
             >
               {formatRelativeDate(new Date(post.createdAt))}
             </Link>
@@ -53,9 +58,19 @@ export default function Posts({ post }: { post: PostData }) {
         )}
       </div>
       <Linkify>
-        <div className="whitespace-pre-line break-words break-all">{post.content}</div>
+        <div className="whitespace-pre-line break-words break-all">
+          {post.content}
+        </div>
       </Linkify>
       {!!post.attachments.length && <MediaPreviews medias={post.attachments} />}
+      <hr />
+      <LikeButton
+        postId={post.id}
+        initialState={{
+          likes: post._count.likes,
+          isLikedByUser: post.likes.some((like) => like.userId === user.id),
+        }}
+      />
     </article>
   );
 }

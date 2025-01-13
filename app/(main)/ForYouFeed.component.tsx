@@ -5,7 +5,9 @@
 import Posts from "@/components/posts/Posts";
 import ky from "ky";
 import { PostsPage } from "@/lib/types";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";

@@ -2,8 +2,14 @@ import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import { FollowerInfo } from "@/lib/types";
 
-// This is the GET API ROUTE FOR: /api/users/userId/followers
-// description: This API is for fetching the userId info regarding the following details
+/**
+ * Handles the GET request for follower details of an user.
+ *
+ * API Endpoint: /api/users/[userId]/followers
+ * @param {req} Request
+ * @param {postId} postId
+ * @description This API is used to fetch the follower info of a particular user
+ */
 export async function GET(
   req: Request,
   { params }: { params: { userId: string } },

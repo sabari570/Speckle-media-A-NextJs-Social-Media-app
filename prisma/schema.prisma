@@ -15,19 +15,21 @@ datasource db {
 }
 
 model User {
-  id           String    @id
-  username     String    @unique
+  id           String     @id
+  username     String     @unique
   displayName  String
-  email        String?   @unique
+  email        String?    @unique
   passwordHash String?
-  googleId     String?   @unique
+  googleId     String?    @unique
   avatarUrl    String?
   bio          String?
   sessions     Session[]
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime   @default(now())
   Post         Post[]
-  followers    Follow[]  @relation("Following") // Users that the user follows - Following 
-  following    Follow[]  @relation("Followers") // Users that follows the user - Followers
+  followers    Follow[]   @relation("Following") // Users that the user follows - Following 
+  following    Follow[]   @relation("Followers") // Users that follows the user - Followers
+  likes        Like[]
+  bookmarks    Bookmark[]
 
   @@map("users")
 }
@@ -42,13 +44,15 @@ model Session {
 }
 
 model Post {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   content     String
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   attachments Media[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  likes       Like[]
+  bookmarks   Bookmark[]
 
   @@map("posts")
 }
@@ -110,6 +114,29 @@ model Follow {
 // --------------------------|
 // UserA's ID	 | UserB's ID  |
 // --------------------------
+
+// Like model that includes the likes details of each post
+model Like {
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("likes")
+}
+
+// Bookmark model that includes all the posts that are bookmarked
+model Bookmark {
+  id     String @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("bookmarks")
+}
 
 // The Users table remains unaffected directly by the follow action itself, but if you fetch a user’s following or followers, the new relationships will be visible:
 enum MEDIA_TYPE {
