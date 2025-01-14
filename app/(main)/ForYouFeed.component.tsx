@@ -5,9 +5,7 @@
 import Posts from "@/components/posts/Posts";
 import ky from "ky";
 import { PostsPage } from "@/lib/types";
-import {
-  useInfiniteQuery,
-} from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
@@ -17,11 +15,12 @@ export default function ForYouFeed() {
   const {
     data,
     fetchNextPage,
-    isFetching,
+    isFetching, // isFetching is when some of the posts are fetched and we are loading the next posts - infinte loading feature
     hasNextPage,
     isFetchingNextPage,
-    isPending,
+    isPending, // isPending is for when no posts is fetched and we are fetching the post initially
     error,
+    status,
   } = useInfiniteQuery({
     // These are the keys which is used to store this cache and also retrieve them
     queryKey: ["post-feed", "for-you"],
@@ -54,6 +53,14 @@ export default function ForYouFeed() {
         "An error has occurred: " {error.message}
       </p>
     );
+
+  if (status === "success" && !posts?.length && !hasNextPage) {
+    return (
+      <p className="text-center text-muted-foreground">
+        No one have posted anything yet
+      </p>
+    );
+  }
   return (
     <InfiniteScrollContainer
       onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}

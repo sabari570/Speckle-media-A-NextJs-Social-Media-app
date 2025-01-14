@@ -32,7 +32,7 @@ export default function LikeButton({ postId, initialState }: LikeButtonProps) {
         ? ky.delete(`/api/posts/${postId}/likes`)
         : ky.post(`/api/posts/${postId}/likes`),
     onMutate: async () => {
-      await queryClient.cancelQueries();
+      await queryClient.cancelQueries({ queryKey });
 
       const previousState = queryClient.getQueryData<LikesInfo>(queryKey);
       queryClient.setQueryData<LikesInfo>(queryKey, () => ({

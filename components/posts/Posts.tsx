@@ -11,6 +11,7 @@ import Linkify from "../Linkify";
 import UserToolTip from "../UserToolTip";
 import MediaPreviews from "../MediaPreview";
 import LikeButton from "./LikeButton";
+import BookmarkButton from "./BookmarkButton";
 
 export default function Posts({ post }: { post: PostData }) {
   const { user } = useSession();
@@ -64,13 +65,23 @@ export default function Posts({ post }: { post: PostData }) {
       </Linkify>
       {!!post.attachments.length && <MediaPreviews medias={post.attachments} />}
       <hr />
-      <LikeButton
-        postId={post.id}
-        initialState={{
-          likes: post._count.likes,
-          isLikedByUser: post.likes.some((like) => like.userId === user.id),
-        }}
-      />
+      <div className="flex items-center justify-between">
+        <LikeButton
+          postId={post.id}
+          initialState={{
+            likes: post._count.likes,
+            isLikedByUser: post.likes.some((like) => like.userId === user.id),
+          }}
+        />
+        <BookmarkButton
+          postId={post.id}
+          initialState={{
+            isBookmarkedByUser: post.bookmarks.some(
+              (bookmark) => bookmark.userId === user.id,
+            ),
+          }}
+        />
+      </div>
     </article>
   );
 }
